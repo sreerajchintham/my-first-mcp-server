@@ -1,0 +1,65 @@
+# Locked versions for reproducible installs
+# Generated from working environment
+
+# Core MCP (Model Context Protocol) dependencies
+mcp==1.10.0
+
+# Google API dependencies
+google-auth==2.39.0
+google-auth-oauthlib==1.2.2
+google-auth-httplib2==0.2.0
+google-api-python-client==2.174.0
+
+# Google Generative AI (Gemini) dependencies
+google-generativeai==0.8.5
+google-ai-generativelanguage==0.6.15
+
+# GitHub API dependencies
+PyGithub==2.6.1
+pynacl==1.5.0
+pyjwt==2.8.0
+Deprecated==1.2.18
+wrapt==1.14.1
+
+# Environment and configuration
+python-dotenv==1.1.1
+
+# HTTP and networking
+requests==2.32.3
+
+# Data handling and utilities
+pydantic==2.8.2
+pydantic-core==2.20.1
+
+# Async support
+anyio==4.9.0
+
+# Protocol Buffers and gRPC
+protobuf==5.29.4
+grpcio==1.71.0
+grpcio-status==1.71.0
+
+# Additional Google dependencies
+googleapis-common-protos==1.70.0
+google-api-core==2.24.2
+proto-plus==1.26.1
+
+# Utilities
+tqdm==4.66.5
+typing-extensions==4.14.0
+cachetools==5.3.3
+certifi==2024.8.30
+charset-normalizer==3.3.2
+idna==3.7
+urllib3==2.2.3
+
+# Cryptography and authentication
+rsa==4.9.1
+pyasn1==0.4.8
+pyasn1-modules==0.2.8
+
+# Additional dependencies
+httplib2==0.22.0
+pyparsing==3.1.2
+uritemplate==4.2.0
+annotated-types==0.6.0 
