@@ -202,17 +202,28 @@ await add_to_google_doc("doc_id", summary, "Projects")
 my-first-mcp-server/
 ├── 📄 mcp_server.py              # Main MCP server
 ├── 🧪 test_client.py             # Interactive test suite
-├── 📝 demo_readme.py             # README generation demo
+├── 🧪 test_github_tool.py        # GitHub tool testing
+├── 🔧 debug_mcp_connection.py    # MCP connection debugging
 ├── 🔑 reauthorize_google_apis.py # Google OAuth setup
 ├── ✅ validate_setup.py          # Dependency validation
-├── 🏃 run_env.py                 # Environment verification
 ├── 📋 requirements.txt           # Python dependencies
 ├── 🔒 requirements-lock.txt      # Locked versions
+├── 📖 README.md                  # Project documentation
 ├── 📖 SETUP.md                   # Detailed setup guide
 ├── 🌍 .env                       # Environment variables
-└── 📁 CREDENTIALS/               # OAuth credentials
-    ├── client_secret.json
-    └── token.json
+├── 📁 CREDENTIALS/               # OAuth credentials
+│   ├── client_secret.json
+│   └── token.json
+└── 📁 support files/             # Configuration and support files
+    ├── claude_desktop_config.json
+    ├── cursor_mcp_config.json
+    ├── cursor_mcp_config_final.json
+    ├── CURSOR_FIX_GUIDE.md
+    ├── CURSOR_SETUP_GUIDE.md
+    ├── demo_readme.py
+    ├── presentation_outline.md
+    ├── render_deployment_guide.md
+    └── run_env.py
 ```
 
 ## 🔍 Troubleshooting
