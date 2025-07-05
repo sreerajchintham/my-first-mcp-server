@@ -68,12 +68,16 @@ except Exception as e:
 
 # Initialize GitHub API
 try:
-    if GITHUB_TOKEN:
+    if GITHUB_TOKEN and GITHUB_TOKEN != "your_token_here":
         logger.debug("Initializing GitHub API")
         github_client = Github(GITHUB_TOKEN)
-        # Test the connection
-        user = github_client.get_user()
-        logger.debug(f"GitHub API initialized successfully for user: {user.login}")
+        # Test the connection (but don't fail if it's invalid)
+        try:
+            user = github_client.get_user()
+            logger.debug(f"GitHub API initialized successfully for user: {user.login}")
+        except Exception as auth_error:
+            logger.warning(f"GitHub token may be invalid: {auth_error}")
+            logger.warning("GitHub operations will not work until a valid token is provided.")
     else:
         logger.warning("GitHub token not configured. GitHub operations will not be available.")
         github_client = None

@@ -12,6 +12,7 @@ GOOGLE_TOKEN_FILE = os.path.join(os.getenv("GOOGLE_CREDENTIALS_DIR", "CREDENTIAL
 
 # Test GitHub token
 if GITHUB_TOKEN:
+    print(f"GitHub token: {GITHUB_TOKEN}")
     print("GitHub token loaded successfully")
 else:
     print("Error: GITHUB_TOKEN not found")
