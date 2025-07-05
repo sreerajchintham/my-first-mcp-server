@@ -295,7 +295,6 @@ The server integrates with:
 
 ## License
 
-[Add your license information here]
 
 ## Support
 
