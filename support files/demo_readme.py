@@ -36,7 +36,10 @@ async def demo_readme_generation():
                             import json
                             try:
                                 file_data = json.loads(content.text)
-                                if isinstance(file_data, dict) and 'id' in file_data:
+                                if isinstance(file_data, list) and file_data:
+                                    first_file = file_data[0]  # Get the first file from the list
+                                    break
+                                elif isinstance(file_data, dict) and 'id' in file_data:
                                     first_file = file_data
                                     break
                             except:

@@ -307,6 +307,155 @@ async def read_repository_files_for_repo(session, repo_name):
     except Exception as e:
         print(f"❌ Error reading files: {e}")
 
+async def offer_save_to_google_docs(session, repo_name, ai_analysis, analysis_type):
+    """Offer to save the GitHub analysis to Google Docs"""
+    
+    analysis_names = {
+        "comprehensive": "Comprehensive Analysis",
+        "readme_only": "README & Documentation Analysis", 
+        "code_only": "Code Analysis",
+        "structure": "Project Structure Analysis"
+    }
+    
+    save_choice = input(f"\n📄 Save this analysis to Google Docs? (Y/n): ").strip().lower()
+    if save_choice in ['n', 'no']:
+        return
+    
+    print(f"\n📄 Google Docs Options:")
+    print("1. Create new document")
+    print("2. Add to existing document")
+    
+    choice = input("Select option (1-2, default: 1): ").strip()
+    
+    if choice == "2":
+        # Add to existing document
+        await add_analysis_to_existing_doc(session, repo_name, ai_analysis, analysis_type)
+    else:
+        # Create new document
+        await create_new_doc_with_analysis(session, repo_name, ai_analysis, analysis_type)
+
+async def add_analysis_to_existing_doc(session, repo_name, ai_analysis, analysis_type):
+    """Add analysis to an existing Google Doc"""
+    
+    # Search for existing docs
+    search_term = input("Search for documents (default: 'analysis'): ").strip()
+    if not search_term:
+        search_term = "analysis"
+    
+    try:
+        docs_result = await session.call_tool("list_google_docs", {"search_term": search_term})
+        
+        documents = []
+        for content in docs_result.content:
+            if hasattr(content, 'text'):
+                try:
+                    data = json.loads(content.text)
+                    if isinstance(data, dict) and "error" not in data:
+                        documents = data.get("documents", [])
+                        break
+                except json.JSONDecodeError:
+                    continue
+        
+        if not documents:
+            print(f"📭 No documents found with '{search_term}'. Creating new document instead...")
+            await create_new_doc_with_analysis(session, repo_name, ai_analysis, analysis_type)
+            return
+        
+        # Show available documents
+        print(f"\n📄 Found {len(documents)} documents:")
+        for i, doc in enumerate(documents, 1):
+            print(f"{i:2d}. {doc.get('name')}")
+            print(f"    📅 Modified: {doc.get('modified', 'Unknown')[:10]}")
+        
+        # Get user selection
+        doc_choice = input(f"\nSelect document (1-{len(documents)}) or press Enter to create new: ").strip()
+        
+        if not doc_choice:
+            await create_new_doc_with_analysis(session, repo_name, ai_analysis, analysis_type)
+            return
+        
+        try:
+            doc_index = int(doc_choice) - 1
+            if 0 <= doc_index < len(documents):
+                selected_doc = documents[doc_index]
+                doc_id = selected_doc.get('id')
+                doc_name = selected_doc.get('name')
+                
+                # Add to selected document
+                section_title = f"GitHub Repository Analysis - {repo_name}"
+                print(f"\n📝 Adding analysis to '{doc_name}'...")
+                
+                add_result = await session.call_tool("add_to_google_doc", {
+                    "doc_id": doc_id,
+                    "content": ai_analysis,
+                    "section_title": section_title
+                })
+                
+                await handle_google_docs_response(add_result, f"Added analysis to '{doc_name}'")
+                
+            else:
+                print("❌ Invalid document selection")
+        except ValueError:
+            print("❌ Invalid input")
+            
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+async def create_new_doc_with_analysis(session, repo_name, ai_analysis, analysis_type):
+    """Create a new Google Doc with the analysis"""
+    
+    analysis_names = {
+        "comprehensive": "Comprehensive Analysis",
+        "readme_only": "README & Documentation Analysis", 
+        "code_only": "Code Analysis",
+        "structure": "Project Structure Analysis"
+    }
+    
+    # Generate default title
+    default_title = f"GitHub Analysis - {repo_name}"
+    title = input(f"Document title (default: '{default_title}'): ").strip()
+    if not title:
+        title = default_title
+    
+    section_title = f"GitHub Repository Analysis - {repo_name}"
+    
+    print(f"\n📝 Creating new document '{title}'...")
+    
+    try:
+        create_result = await session.call_tool("create_google_doc", {
+            "title": title,
+            "content": ai_analysis,
+            "section_title": section_title
+        })
+        
+        await handle_google_docs_response(create_result, f"Created new document '{title}'")
+        
+    except Exception as e:
+        print(f"❌ Error creating document: {e}")
+
+async def handle_google_docs_response(result, success_message):
+    """Handle the response from Google Docs operations"""
+    
+    for content in result.content:
+        if hasattr(content, 'text'):
+            try:
+                data = json.loads(content.text)
+                if isinstance(data, dict):
+                    if data.get("success"):
+                        print(f"🎉 {success_message}")
+                        doc_info = data.get("document_info", {})
+                        print(f"📄 Document: {doc_info.get('title', 'Unknown')}")
+                        print(f"🔗 Link: {doc_info.get('web_view_link', 'N/A')}")
+                        print(f"🆔 ID: {doc_info.get('document_id', 'N/A')}")
+                    elif "error" in data:
+                        print(f"❌ Error: {data['error']}")
+                    else:
+                        print(f"🤔 Unexpected response: {data}")
+                    break
+            except json.JSONDecodeError:
+                print(f"❌ Could not parse response")
+                break
+
 async def analyze_repository_with_ai(session, repo_name, analysis_type):
     """AI analysis for a specific repository"""
     
@@ -349,6 +498,9 @@ async def analyze_repository_with_ai(session, repo_name, analysis_type):
                         print("=" * 80)
                         print(ai_analysis)
                         print("=" * 80)
+                        
+                        # Offer to save to Google Docs
+                        await offer_save_to_google_docs(session, repo_name, ai_analysis, analysis_type)
                         
                         break
                 except json.JSONDecodeError:
@@ -1224,6 +1376,119 @@ async def interactive_github_uploader(session):
     except Exception as e:
         print(f"❌ Error fetching files: {e}")
 
+async def manage_google_docs(session):
+    """Interactive Google Docs management menu"""
+    
+    print("\n📄 Google Docs Management")
+    print("=" * 40)
+    
+    while True:
+        print("\n📄 Google Docs Options:")
+        print("1. 📋 List existing documents")
+        print("2. 📄 Create new document")
+        print("3. 📝 Add content to existing document")
+        print("4. 🔍 Search documents")
+        print("5. ⬅️  Back to main menu")
+        
+        choice = input("\nSelect option (1-5): ").strip()
+        
+        if choice == "1":
+            # List all documents
+            await list_google_docs_interactive(session)
+        
+        elif choice == "2":
+            # Create new document
+            title = input("Enter document title: ").strip()
+            if title:
+                content = input("Enter initial content (optional): ").strip()
+                section_title = input("Enter section title (default: 'Content'): ").strip()
+                if not section_title:
+                    section_title = "Content"
+                
+                try:
+                    result = await session.call_tool("create_google_doc", {
+                        "title": title,
+                        "content": content,
+                        "section_title": section_title
+                    })
+                    
+                    await handle_google_docs_response(result, f"Created document '{title}'")
+                    
+                except Exception as e:
+                    print(f"❌ Error creating document: {e}")
+            else:
+                print("❌ Title is required")
+        
+        elif choice == "3":
+            # Add content to existing document
+            doc_id = input("Enter document ID: ").strip()
+            if doc_id:
+                content = input("Enter content to add: ").strip()
+                if content:
+                    section_title = input("Enter section title (default: 'New Section'): ").strip()
+                    if not section_title:
+                        section_title = "New Section"
+                    
+                    try:
+                        result = await session.call_tool("add_to_google_doc", {
+                            "doc_id": doc_id,
+                            "content": content,
+                            "section_title": section_title
+                        })
+                        
+                        await handle_google_docs_response(result, "Added content to document")
+                        
+                    except Exception as e:
+                        print(f"❌ Error adding content: {e}")
+                else:
+                    print("❌ Content is required")
+            else:
+                print("❌ Document ID is required")
+        
+        elif choice == "4":
+            # Search documents
+            search_term = input("Enter search term: ").strip()
+            if search_term:
+                try:
+                    result = await session.call_tool("list_google_docs", {"search_term": search_term})
+                    
+                    for content in result.content:
+                        if hasattr(content, 'text'):
+                            try:
+                                data = json.loads(content.text)
+                                if isinstance(data, dict):
+                                    if "error" in data:
+                                        print(f"❌ Error: {data['error']}")
+                                    else:
+                                        documents = data.get("documents", [])
+                                        if documents:
+                                            print(f"\n📄 Found {len(documents)} documents:")
+                                            for i, doc in enumerate(documents, 1):
+                                                print(f"{i:2d}. {doc.get('name')}")
+                                                print(f"    🆔 ID: {doc.get('id')}")
+                                                print(f"    🔗 Link: {doc.get('link')}")
+                                                print(f"    📅 Modified: {doc.get('modified', 'Unknown')[:10]}")
+                                                print()
+                                        else:
+                                            print(f"📭 No documents found with search term '{search_term}'")
+                                break
+                            except json.JSONDecodeError:
+                                print(f"❌ Could not parse response")
+                                break
+                except Exception as e:
+                    print(f"❌ Error searching documents: {e}")
+            else:
+                print("❌ Search term is required")
+        
+        elif choice == "5":
+            # Back to main menu
+            break
+        
+        else:
+            print("❌ Invalid choice. Please select 1-5.")
+        
+        input("\nPress Enter to continue...")
+
 async def main_menu():
     """Main menu for testing MCP tools"""
     
@@ -1267,10 +1532,11 @@ async def main_menu():
                     print("7. 📁 List Colab notebooks")
                     print("8. 📖 Read specific Colab notebook")
                     print("9. 📝 Generate README for notebook")
-                    print("10. 🏓 Test server ping")
-                    print("11. ❌ Exit")
+                    print("10. 📄 Manage Google Docs")
+                    print("11. 🏓 Test server ping")
+                    print("12. ❌ Exit")
                     
-                    choice = input("\nSelect an option (1-11): ").strip()
+                    choice = input("\nSelect an option (1-12): ").strip()
                     
                     if choice == "1":
                         await interactive_github_uploader(session)
@@ -1306,13 +1572,24 @@ async def main_menu():
                                 if hasattr(content, 'text'):
                                     try:
                                         files = json.loads(content.text)
-                                        if isinstance(files, list):
-                                            print(f"Found {len(files)} Colab notebooks:")
+                                        if isinstance(files, list) and files:
+                                            print(f"\n📚 Found {len(files)} Colab notebooks:")
+                                            print("=" * 60)
                                             for i, file in enumerate(files, 1):
                                                 print(f"{i:2d}. {file.get('name', 'N/A')}")
+                                                print(f"    📄 ID: {file.get('id', 'N/A')}")
+                                                print(f"    🔗 Link: {file.get('link', 'N/A')}")
+                                                print()
+                                        elif isinstance(files, dict) and "error" in files:
+                                            print(f"❌ Error: {files['error']}")
+                                        elif isinstance(files, list) and not files:
+                                            print("📭 No Colab notebooks found in your Google Drive")
+                                        else:
+                                            print(f"🤔 Unexpected response format: {type(files)}")
                                         break
-                                    except json.JSONDecodeError:
-                                        pass
+                                    except json.JSONDecodeError as e:
+                                        print(f"❌ JSON decode error: {e}")
+                                        print(f"Raw content: {content.text[:200]}...")
                         except Exception as e:
                             print(f"❌ Error: {e}")
                     elif choice == "8":
@@ -1358,16 +1635,18 @@ async def main_menu():
                             except Exception as e:
                                 print(f"❌ Error: {e}")
                     elif choice == "10":
+                        await manage_google_docs(session)
+                    elif choice == "11":
                         try:
                             ping_result = await session.call_tool("ping", {})
                             print("🏓 Pong! Server is responsive.")
                         except Exception as e:
                             print(f"❌ Ping failed: {e}")
-                    elif choice == "11":
+                    elif choice == "12":
                         print("👋 Goodbye!")
                         return
                     else:
-                        print("❌ Invalid choice. Please select 1-11.")
+                        print("❌ Invalid choice. Please select 1-12.")
                     
                     input("\nPress Enter to continue...")
                     

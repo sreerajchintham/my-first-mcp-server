@@ -3,7 +3,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 import google.generativeai as genai
-from github import Github
+from github import Github 
 import io
 import json
 from dotenv import load_dotenv
@@ -111,7 +111,7 @@ def list_colab_files(folder_id: Optional[str] = None):
         
         files = results.get("files", [])
         logger.debug(f"Found {len(files)} Colab files")
-        return [{"id": f["id"]+"\n", "name": f["name"]+"\n", "link": f["webViewLink"]+"\n"} for f in files]
+        return [{"id": f["id"], "name": f["name"], "link": f["webViewLink"]} for f in files]
     except Exception as e:
         logger.error(f"Error in list_colab_files: {e}")
         return {"error": str(e)}
@@ -1020,6 +1020,69 @@ def list_google_docs(search_term: str = "resume"):
         
     except Exception as e:
         logger.error(f"Error listing Google Docs: {e}")
+        return {"error": str(e)}
+
+@mcp.tool()
+def create_google_doc(title: str, content: str = "", section_title: str = "GitHub Repository Analysis"):
+    """Create a new Google Docs document with optional content.
+    
+    Args:
+        title: Title for the new document
+        content: Optional content to add to the document
+        section_title: Title for the section being added (default: 'GitHub Repository Analysis')
+    """
+    logger.debug(f"Creating new Google Doc: {title}")
+    
+    if not docs_service:
+        return {"error": "Google Docs API not configured. Please check your credentials and permissions."}
+    
+    try:
+        # Create a new document
+        doc = docs_service.documents().create(body={'title': title}).execute()
+        doc_id = doc.get('documentId')
+        
+        logger.debug(f"Created new document with ID: {doc_id}")
+        
+        # Add content if provided
+        if content:
+            formatted_content = f"{section_title}\n{content}\n"
+            
+            # Create the requests for inserting content
+            requests = [
+                {
+                    'insertText': {
+                        'location': {
+                            'index': 1,  # Start at the beginning
+                        },
+                        'text': formatted_content
+                    }
+                }
+            ]
+            
+            # Apply the updates
+            docs_service.documents().batchUpdate(
+                documentId=doc_id,
+                body={'requests': requests}
+            ).execute()
+        
+        # Get document info for response
+        doc_info = {
+            "document_id": doc_id,
+            "title": title,
+            "content_added": content,
+            "section_title": section_title if content else None,
+            "web_view_link": f"https://docs.google.com/document/d/{doc_id}/edit"
+        }
+        
+        logger.debug(f"Successfully created Google Doc: {title}")
+        return {
+            "success": True,
+            "message": f"Document '{title}' created successfully",
+            "document_info": doc_info
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating Google Doc: {e}")
         return {"error": str(e)}
 
 @mcp.tool()

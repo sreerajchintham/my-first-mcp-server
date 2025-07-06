@@ -146,6 +146,7 @@ async with stdio_client(server_params) as (read, write):
 
 ### **Google Docs Tools**
 - `list_google_docs(search_term)` - Find Google Docs
+- `create_google_doc(title, content)` - Create new Google Doc
 - `add_to_google_doc(doc_id, content)` - Add content to documents
 
 ### **Utility Tools**
@@ -160,6 +161,21 @@ async with stdio_client(server_params) as (read, write):
 | **README Only** | Focus on documentation and descriptions | Documentation review |
 | **Code Only** | Deep dive into code structure and logic | Technical assessment |
 | **Structure** | Project organization and architecture | Architecture review |
+
+## 🔗 Key Features
+
+### **GitHub Analysis to Google Docs Integration**
+- **Automatic Saving**: Save AI-powered repository analysis directly to Google Docs
+- **Document Options**: Create new documents or add to existing ones
+- **Professional Formatting**: Clean, structured content with proper headings
+- **Interactive Workflow**: Prompted options after each analysis
+- **Search & Select**: Find and select existing documents by search term
+
+### **Enhanced Google Docs Management**
+- **Document Creation**: Create new Google Docs with initial content
+- **Content Addition**: Add formatted sections to existing documents
+- **Document Search**: Search and list documents by keywords
+- **Document Linking**: Direct links to created/updated documents
 
 ## 📊 Integration Examples
 
@@ -194,6 +210,26 @@ summary = await summarize_repo_analysis_for_resume(
 
 # 3. Add to Google Doc
 await add_to_google_doc("doc_id", summary, "Projects")
+```
+
+### **GitHub Analysis to Google Docs Workflow**
+```python
+# 1. Analyze GitHub repository with AI
+analysis = await analyze_github_repo_with_ai("user/repo", "comprehensive")
+
+# 2. Option A: Create new document with analysis
+doc_result = await create_google_doc(
+    "GitHub Analysis - user/repo",
+    analysis,
+    "Repository Analysis"
+)
+
+# 2. Option B: Add analysis to existing document
+await add_to_google_doc(
+    "existing_doc_id",
+    analysis,
+    "GitHub Repository Analysis - user/repo"
+)
 ```
 
 ## 🏗️ Project Structure
