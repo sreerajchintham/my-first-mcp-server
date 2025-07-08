@@ -1,0 +1,43 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+
+startCommand:
+  type: stdio
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'python',
+      args: ['mcp_server.py'],
+      env: {
+        GOOGLE_CREDENTIALS_DIR: config.googleCredentialsDir,
+        GOOGLE_TOKEN_FILE: config.googleTokenFile,
+        GITHUB_TOKEN: config.githubToken || '',
+        GEMINI_API_KEY: config.geminiApiKey || ''
+      }
+    })
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - googleCredentialsDir
+      - googleTokenFile
+    properties:
+      googleCredentialsDir:
+        type: string
+        description: Directory path containing Google OAuth credentials
+      googleTokenFile:
+        type: string
+        description: Filename of the Google OAuth token file
+      githubToken:
+        type: string
+        default: ""
+        description: GitHub personal access token
+      geminiApiKey:
+        type: string
+        default: ""
+        description: Gemini API key for AI features
+  exampleConfig:
+    googleCredentialsDir: ./CREDENTIALS
+    googleTokenFile: token.json
+    githubToken: ghp_yourtokenhere
+    geminiApiKey: your_gemini_api_key_here

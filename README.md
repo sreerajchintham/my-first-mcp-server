@@ -5,6 +5,7 @@ A comprehensive **Model Context Protocol (MCP)** server that integrates **Google
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![MCP](https://img.shields.io/badge/MCP-1.10.0%2B-green.svg)](https://github.com/modelcontextprotocol/python-sdk)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![smithery badge](https://smithery.ai/badge/@sreerajchintham/my-first-mcp-server)](https://smithery.ai/server/@sreerajchintham/my-first-mcp-server)
 
 ## 🌟 Features
 
@@ -63,6 +64,14 @@ python test_client.py
 - **Gemini API Key** (optional, for AI features)
 
 ## 🛠️ Installation
+
+### Installing via Smithery
+
+To install my-first-mcp-server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@sreerajchintham/my-first-mcp-server):
+
+```bash
+npx -y @smithery/cli install @sreerajchintham/my-first-mcp-server --client claude
+```
 
 ### **Option 1: Development Setup**
 ```bash
