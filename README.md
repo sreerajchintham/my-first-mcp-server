@@ -1,5 +1,6 @@
 # 🚀 MCP Multi-Service Server
 
+[![smithery badge](https://smithery.ai/badge/@sreerajchintham/google-docs-github-colab)](https://smithery.ai/server/@sreerajchintham/google-docs-github-colab)
 A comprehensive **Model Context Protocol (MCP)** server that integrates **Google Colab**, **GitHub**, and **Google Docs** with **AI-powered analysis** for seamless development workflow automation.
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
@@ -63,6 +64,14 @@ python test_client.py
 - **Gemini API Key** (optional, for AI features)
 
 ## 🛠️ Installation
+
+### Installing via Smithery
+
+To install google-docs-github-colab for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@sreerajchintham/google-docs-github-colab):
+
+```bash
+npx -y @smithery/cli install @sreerajchintham/google-docs-github-colab --client claude
+```
 
 ### **Option 1: Development Setup**
 ```bash
